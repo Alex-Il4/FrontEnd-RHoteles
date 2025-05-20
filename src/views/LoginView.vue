@@ -1,6 +1,6 @@
 <template>
   <v-container fluid fill-height class="login-page-background">
-    <v-row align="center" justify="center" class="fill-height pt-16">
+    <v-row align="center" justify="center" class="fill-height pt-16 pl-8">
       <v-col cols="12" md="8" class="d-flex align-center justify-center">
         <v-carousel
           height="400"
@@ -26,7 +26,6 @@
           max-width="438"
           rounded="lg"
           :style="{
-            backgroundImage: `url(${BGLoginCard})`, /* Fondo de imagen para la tarjeta */
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             color: 'white', /* Color del texto dentro de la tarjeta */
@@ -65,7 +64,7 @@
           ></v-text-field>
 
           <v-btn
-            class="mb-8"
+            class="mb-8 card-border-animation"
             color="blue"
             size="large"
             variant="tonal"
@@ -120,12 +119,12 @@ const login = async () => {
 
 <style scoped>
 .login-page-background {
-  background-color: transparent !important; 
+  background-color: #121212 !important; 
 }
 
 .v-row.fill-height {
   height: 100%;
-}
+} 
 
 /* Animación del borde (tu código existente) */
 .card-border-animation {
