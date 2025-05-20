@@ -4,7 +4,7 @@
 
 <template>
   <v-app>
-    <Menu />
+    
     <v-main>
       <router-view />
     </v-main>
