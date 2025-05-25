@@ -1,9 +1,7 @@
 <template>
   <v-app>
-    <menu />
-
     <v-main class="bg-gray-100 font-sans py-8 px-4 sm:px-6 lg:px-8">
-      <v-container fluid>
+      <v-container fluid class="pt-16"> <Menu />
         <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Catálogo de Hoteles</h1>
 
         <v-row justify="center" class="w-full max-w-7xl mx-auto">
@@ -71,15 +69,14 @@
 </template>
 
 <script>
-import menu from '../components/menu.vue';
+import Menu from '../components/menu.vue';
 export default {
   name: 'HomeView',
   components: {
-    menu // Asegúrate de que el nombre aquí coincide con el que usarás en el template
+    Menu,
   },
   data() {
     return {
-      // Simulación de datos de hoteles de una api de la db
       hotels: [
         {
           id: 1,
