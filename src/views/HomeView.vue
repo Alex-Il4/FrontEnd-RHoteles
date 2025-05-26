@@ -192,26 +192,22 @@ export default {
   },
   methods: {
     reserveHotel(hotel) {
-      // Obtener las reservaciones existentes del localStorage
-      // Si no hay, inicializar como un array vacío
       const existingReservations = JSON.parse(localStorage.getItem('reservas') || '[]');
 
       // Crear un objeto de reservación con las propiedades que CarritoView espera
+      // ¡Asegúrate de incluir la URL de la imagen aquí!
       const newReservation = {
         id: hotel.id,
         nombre: hotel.nombreHotel,
         ubicacion: hotel.ciudad,
         precio: hotel.precioPorNoche,
         descripcion: hotel.descripcion,
+        imageUrl: hotel.imageUrl // <-- ¡Esta es la línea clave!
       };
 
-      // Añadir la nueva reservación a la lista existente
       existingReservations.push(newReservation);
-
-      // Guardar la lista actualizada de reservaciones en localStorage
       localStorage.setItem('reservas', JSON.stringify(existingReservations));
 
-      // Mandar a la vista de carrito
       this.$router.push('/carrito');
       this.message = `¡Hotel "${hotel.nombreHotel}" reservado con éxito!`;
       this.showMessage = true;
