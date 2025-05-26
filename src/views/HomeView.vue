@@ -1,5 +1,5 @@
 <template>
- 
+  
     <Menu />
 
     <v-main class="bg-gray-100 font-sans py-8 px-4 sm:px-6 lg:px-8">
@@ -75,7 +75,7 @@
         </v-btn>
       </template>
     </v-snackbar>
- 
+  
 </template>
 
 <script>
@@ -192,6 +192,27 @@ export default {
   },
   methods: {
     reserveHotel(hotel) {
+      // Obtener las reservaciones existentes del localStorage
+      // Si no hay, inicializar como un array vacío
+      const existingReservations = JSON.parse(localStorage.getItem('reservas') || '[]');
+
+      // Crear un objeto de reservación con las propiedades que CarritoView espera
+      const newReservation = {
+        id: hotel.id,
+        nombre: hotel.nombreHotel,
+        ubicacion: hotel.ciudad,
+        precio: hotel.precioPorNoche,
+        descripcion: hotel.descripcion,
+      };
+
+      // Añadir la nueva reservación a la lista existente
+      existingReservations.push(newReservation);
+
+      // Guardar la lista actualizada de reservaciones en localStorage
+      localStorage.setItem('reservas', JSON.stringify(existingReservations));
+
+      // Mandar a la vista de carrito
+      this.$router.push('/carrito');
       this.message = `¡Hotel "${hotel.nombreHotel}" reservado con éxito!`;
       this.showMessage = true;
     },

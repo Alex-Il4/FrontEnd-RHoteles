@@ -41,7 +41,7 @@ const items = [
   {
     title: 'Vista de David',
     onclick: () => {
-      router.push('/'); //Recuerden cambiar el path a sus componentes
+      router.push('/carrito'); //Recuerden cambiar el path a sus componentes
     },
   },
   {
