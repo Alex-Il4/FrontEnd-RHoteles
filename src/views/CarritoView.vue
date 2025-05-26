@@ -91,7 +91,6 @@ function onImageError(event) {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .carrito-container {
-  /* Padding general, las clases de Tailwind manejan el resto del espaciado */
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
@@ -118,11 +117,9 @@ body {
   margin-bottom: 20px;
   cursor: pointer;
   border-radius: 8px;
-  display: block; /* Para centrar si quieres o darle más control */
-  margin-left: auto; /* Para centrar el botón */
-  margin-right: auto; /* Para centrar el botón */
-  max-width: fit-content; /* Ajustar el ancho al contenido */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: fit-content;
 }
-
-/* El estilo de los botones de Vuetify ya lo manejan las clases de Vuetify y Tailwind */
 </style>

@@ -195,14 +195,13 @@ export default {
       const existingReservations = JSON.parse(localStorage.getItem('reservas') || '[]');
 
       // Crear un objeto de reservación con las propiedades que CarritoView espera
-      // ¡Asegúrate de incluir la URL de la imagen aquí!
       const newReservation = {
         id: hotel.id,
         nombre: hotel.nombreHotel,
         ubicacion: hotel.ciudad,
         precio: hotel.precioPorNoche,
         descripcion: hotel.descripcion,
-        imageUrl: hotel.imageUrl // <-- ¡Esta es la línea clave!
+        imageUrl: hotel.imageUrl
       };
 
       existingReservations.push(newReservation);
