@@ -35,7 +35,7 @@ const items = [
   {
     title: 'Vista de Andrew',
     onclick: () => {
-      router.push('/'); // Redirige a la vista principal. Reecuerden cambiar nombre del item
+      router.push('/home'); // Redirige a la vista principal. Reecuerden cambiar nombre del item
     },
   },
   {
