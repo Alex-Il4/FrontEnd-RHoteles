@@ -81,7 +81,7 @@
               href="#"
               rel="noopener noreferrer"
               target="_blank"
-            >
+              @click.prevent="goToNewAccount">
               Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
             </a>
           </v-card-text>
@@ -115,6 +115,11 @@ const slides = ref([
 const login = async () => {
   await store.dispatch('login');
   router.push('/app/dashboard');
+};
+
+//Dirige a la vista de registro
+const goToNewAccount = () => {
+  router.push('/new-account');
 };
 </script>
 

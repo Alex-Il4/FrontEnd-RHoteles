@@ -3,6 +3,7 @@ import App from '../App.vue';
 import Login from '../views/LoginView.vue';
 import Home from '../views/HomeView.vue';
 import Carrito from '../views/CarritoView.vue';
+import NewAccount from '../views/NewAccountView.vue';
 
 const routes = [
   {
@@ -22,6 +23,11 @@ const routes = [
     path: '/carrito',
     name: 'carrito',
     component: Carrito,
+  },
+  {
+    path: '/new-account',
+    name: 'new-account',
+    component: NewAccount,
   }
 ];
 
