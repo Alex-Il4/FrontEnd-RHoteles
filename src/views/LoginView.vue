@@ -84,21 +84,11 @@ const login = async () => {
       password: password.value
     });
 
-    // Si la solicitud es exitosa (código de estado 200 OK)
     if (response.status === 200) {
-      // Opcional: Si el backend devuelve datos del usuario o un token, podrías guardarlos en Vuex
-      // Por ejemplo, store.commit('SET_USER', response.data);
-      // O store.commit('SET_AUTH_TOKEN', response.data.token);
-
       console.log('Login exitoso:', response.data);
 
-      // Despacha la acción Vuex si aún la necesitas para el estado global de la app
-      // await store.dispatch('login'); // Esto puede ser opcional si ya gestionas el estado con la respuesta
-
-      // Redirige al dashboard
       router.push('/home');
     } else {
-      // Esto rara vez se ejecuta si el servidor devuelve un 401/404/500, ya que axios lo maneja en el catch
       errorMessage.value = 'Fallo al iniciar sesión. Por favor, inténtalo de nuevo.';
       console.error('Login fallido con status:', response.status);
     }
