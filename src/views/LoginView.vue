@@ -37,12 +37,7 @@
           </v-btn>
 
           <v-card-text class="text-center">
-            <a
-              class="text-blue text-decoration-none"
-              href="#"
-              rel="noopener noreferrer"
-              target="_blank"
-              @click.prevent="goToNewAccount">
+            <a class="text-blue text-decoration-none" href="#" rel="noopener noreferrer" target="_blank" @click.prevent="goToNewAccount">
               Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
             </a>
           </v-card-text>

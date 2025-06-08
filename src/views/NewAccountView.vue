@@ -118,7 +118,7 @@ const createAccount = () => {
 */
 
 const goToLogin = () => {
-  router.push('/');
+  router.push('/Login');
 };
 </script>
 
