@@ -21,7 +21,7 @@
     <v-app-bar-title>Menu</v-app-bar-title>
 
     <template v-slot:append>
-      <v-btn @click="router.push('/login')" icon="mdi-account-circle"></v-btn>
+      <v-btn @click="router.push('/Login')" icon="mdi-account-circle"></v-btn>
     </template>
   </v-app-bar>
 </template>
