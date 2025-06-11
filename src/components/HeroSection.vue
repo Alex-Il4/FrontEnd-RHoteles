@@ -64,32 +64,32 @@ export default {
 .grid-item-1 {
   grid-column: 1;
   grid-row: 1;
-  background-image: url('../assets/foto1.jpg');
+  background-image: url('../assets/hotel1.jpg');
 }
 .grid-item-2 {
   grid-column: 2 / span 2;
   grid-row: 1;
-  background-image: url('../assets/foto2.jpg');
+  background-image: url('../assets/hotel2.jpg');
 }
 .grid-item-3 {
   grid-column: 3;
   grid-row: 1;
-  background-image: url('../assets/foto3.jpg');
+  background-image: url('../assets/hotel3.jpg');
 }
 .grid-item-4 {
   grid-column: 1;
   grid-row: 2;
-  background-image: url('../assets/foto4.jpg');
+  background-image: url('../assets/hotel4.jpg');
 }
 .grid-item-5 {
   grid-column: 2;
   grid-row: 2;
-  background-image: url('../assets/foto5.jpg');
+  background-image: url('../assets/hotel5.jpg');
 }
 .grid-item-6 {
   grid-column: 3;
   grid-row: 2;
-  background-image: url('../assets/foto7.jpg');
+  background-image: url('../assets/hotel6.jpg');
 }
 
 .content-overlay {

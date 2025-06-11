@@ -2,7 +2,7 @@
   <section class="about-section">
     <div class="about-content-wrapper">
       <div class="about-left">
-        <img src="../assets/foto8.jpg" alt="Hoteles para Vacacionar" class="about-image" />
+        <img src="../assets/hotel4.jpg" alt="Hoteles para Vacacionar" class="about-image" />
       </div>
       <div class="about-right">
         <h2 class="section-title">Sobre Nosotros</h2>
