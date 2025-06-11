@@ -59,14 +59,24 @@ export default {
       email: '',
       password: '',
       errorMessage: null,
+      // Si usas visible para la contraseña, asegúrate de que esté aquí también:
+      visible: false, // Añadir esta propiedad si no la tienes
+      // Y también para el carrusel
+      slides: [
+        'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
+        'https://cdn.vuetifyjs.com/images/cards/hotel.jpg',
+        'https://cdn.vuetifyjs.com/images/cards/sunshine.jpg',
+      ],
+      BGLoginCard: 'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg', // Y esta si es una imagen local o URL
     };
   },
   methods: {
-    async handleLogin() {
+    // Cambiado de handleLogin a login para que coincida con @click="login" en la plantilla
+    async login() {
       this.errorMessage = null; // Limpiar mensajes de error anteriores
 
       try {
-        const response = await axios.post('http://localhost:8080/api/auth/login', { // Ajusta la URL de tu endpoint de login
+        const response = await axios.post('http://localhost:8081/api/auth/login', { // Ajusta la URL de tu endpoint de login
           email: this.email,
           password: this.password,
         });
