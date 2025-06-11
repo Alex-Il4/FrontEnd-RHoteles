@@ -15,8 +15,9 @@
         Vieve la mejor experiencia de viaje con nosotros. Descubre destinos únicos y aventuras inolvidables.
       </p>
       <div class="button-container">
-        <button class="btn primary">Mejores Hoteles</button>
-     
+        <router-link to="/hoteles">
+          <button class="btn primary">Mejores Hoteles</button>
+        </router-link>
       </div>
     </div>
   </section>
@@ -26,6 +27,8 @@
 export default {
   name: 'HeroSection',
 };
+
+
 </script>
 
 <style scoped>
