@@ -1,18 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import App from '../App.vue';
 import Login from '../views/LoginView.vue';
+import Home from '../views/HomeView.vue';
+import Carrito from '../views/CarritoView.vue';
 
 const routes = [
   {
-    path: '/',
-    name: 'Home',
-    component: App,
+    path: '/home',
+    name: 'home',
+    component: Home,
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
-    path: '/login',
+    path: '/Login',
     name: 'Login',
     component: Login,
   },
+  {
+    path: '/carrito',
+    name: 'carrito',
+    component: Carrito,
+  }
 ];
 
 const router = createRouter({
