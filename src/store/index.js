@@ -1,33 +1,57 @@
-// src/store/index.js
-import { createStore } from 'vuex';
+// store/index.js (o dentro de un módulo, ej: store/modules/user.js)
 
-const store = createStore({
+import { createStore } from 'vuex'; // Si usas Vuex 4 con Vue 3
+// import Vuex from 'vuex'; // Si usas Vuex 3 con Vue 2
+
+// Si usas Vuex 3 con Vue 2, necesitarías:
+// Vue.use(Vuex);
+
+const store = createStore({ // O new Vuex.Store si es Vuex 3
   state: {
-    isAuthenticated: false,
+    // Aquí guardaremos el ID del usuario autenticado.
+    // Inicialmente es null o 0, indicando que no hay usuario logueado.
+    userId: null,
+    isAuthenticated: false, // También útil para saber si hay sesión activa
+    username: null,
+    email: null,
+    // Puedes añadir el token aquí si en el futuro decides usarlo
+    // token: null,
   },
   mutations: {
-    setAuthenticated(state, status) {
-      state.isAuthenticated = status;
+    // Las mutaciones son la única forma de cambiar el estado de forma síncrona
+    setUserData(state, userData) {
+      state.userId = userData.userId;
+      state.username = userData.username;
+      state.email = userData.email;
+      state.isAuthenticated = true;
+      // state.token = userData.token; // Si usas tokens
     },
+    clearUserData(state) {
+      state.userId = null;
+      state.username = null;
+      state.email = null;
+      state.isAuthenticated = false;
+      // state.token = null;
+    }
   },
   actions: {
-    login({ commit }) {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          commit('setAuthenticated', true);
-          console.log('Usuario autenticado!');
-          resolve(true);
-        }, 1000);
-      });
+    // Las acciones pueden contener lógica asíncrona y luego hacer commit de mutaciones
+    login({ commit }, userData) {
+      // Aquí podrías añadir lógica para guardar el token en localStorage si lo usaras.
+      commit('setUserData', userData);
     },
     logout({ commit }) {
-      commit('setAuthenticated', false);
-      console.log('Usuario desautenticado!');
-    },
+      // Aquí podrías añadir lógica para limpiar el token de localStorage.
+      commit('clearUserData');
+    }
   },
   getters: {
-    isAuthenticated: state => state.isAuthenticated,
-  },
+    // Los getters son como propiedades computadas para el store
+    getUserId: (state) => state.userId,
+    isAuthenticated: (state) => state.isAuthenticated,
+    getUsername: (state) => state.username,
+    getEmail: (state) => state.email,
+  }
 });
 
 export default store;

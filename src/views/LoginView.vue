@@ -18,8 +18,8 @@
         }">
           <div class="text-subtitle-1 text-medium-emphasis">Account</div>
 
-          <v-text-field v-model="email" density="compact" placeholder="Email address" prepend-inner-icon="mdi-email-outline"
-            variant="outlined"></v-text-field>
+          <v-text-field v-model="email" density="compact" placeholder="Email address"
+            prepend-inner-icon="mdi-email-outline" variant="outlined"></v-text-field>
 
           <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
             Password
@@ -47,74 +47,55 @@
   </v-container>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import axios from 'axios'; // Importa axios
+<script>
+import axios from 'axios'; // Asegúrate de tener axios instalado: npm install axios
+// Importa el router si lo usas para redirigir
+import router from '../router'; // Ajusta la ruta a tu archivo de router
 
-// 1. Importa tus imágenes del carrusel aquí
-import CarouselImage1 from '../assets/BGLogin.jpg';
-import CarouselImage2 from '../assets/BGLogin2.jpg';
-import CarouselImage3 from '../assets/BGLogin3.jpg';
+export default {
+  name: 'LoginView', // Asegúrate de que el nombre del componente sea correcto
+  data() {
+    return {
+      email: '',
+      password: '',
+      errorMessage: null,
+    };
+  },
+  methods: {
+    async handleLogin() {
+      this.errorMessage = null; // Limpiar mensajes de error anteriores
 
-const visible = ref(false); // Para el diálogo de login, si lo usas
-const store = useStore();
-const router = useRouter();
+      try {
+        const response = await axios.post('http://localhost:8080/api/auth/login', { // Ajusta la URL de tu endpoint de login
+          email: this.email,
+          password: this.password,
+        });
 
-// 3. Define el array 'slides' con las imágenes importadas
-const slides = ref([
-  CarouselImage1,
-  CarouselImage2,
-  CarouselImage3
-]);
+        // Asumiendo que tu backend devuelve { userId: ..., username: ..., email: ... }
+        const userData = response.data;
 
-// Define las variables reactivas para el nombre de usuario y la contraseña
-const email = ref(''); // Para el campo de nombre de usuario en el formulario
-const password = ref(''); // Para el campo de contraseña en el formulario
-const errorMessage = ref(''); // Para mostrar mensajes de error al usuario
+        // Despacha una acción para guardar los datos del usuario en Vuex
+        this.$store.dispatch('login', userData); // 'login' es la acción que definimos en el store
 
-const login = async () => {
-  errorMessage.value = ''; // Limpia cualquier mensaje de error anterior
+        // Redirige al usuario a la página principal o a la página de reservaciones
+        router.push('/home'); // Ajusta la ruta a donde quieres redirigir
+        // O si no usas router: window.location.href = '/home';
 
-  try {
-    // Realiza la solicitud POST al endpoint de login de tu backend
-    const response = await axios.post('http://localhost:8081/api/auth/login', {
-      email: email.value,
-      password: password.value
-    });
-
-    if (response.status === 200) {
-      console.log('Login exitoso:', response.data);
-
-      router.push('/home');
-    } else {
-      errorMessage.value = 'Fallo al iniciar sesión. Por favor, inténtalo de nuevo.';
-      console.error('Login fallido con status:', response.status);
-    }
-
-  } catch (error) {
-    // Manejo de errores de la solicitud
-    if (error.response) {
-      // El servidor respondió con un código de estado fuera del rango 2xx
-      console.error('Error de respuesta del servidor:', error.response.data);
-      console.error('Código de estado:', error.response.status);
-      errorMessage.value = error.response.data || 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
-      if (error.response.status === 401) {
-        errorMessage.value = 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
-      } else {
-        errorMessage.value = 'Ocurrió un error en el servidor. Inténtalo más tarde.';
+      } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        if (error.response) {
+          // El servidor respondió con un estado fuera del rango 2xx
+          this.errorMessage = error.response.data.message || 'Credenciales inválidas.';
+        } else if (error.request) {
+          // La solicitud fue hecha pero no se recibió respuesta
+          this.errorMessage = 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.';
+        } else {
+          // Algo pasó al configurar la solicitud que disparó un error
+          this.errorMessage = 'Error inesperado al iniciar sesión.';
+        }
       }
-    } else if (error.request) {
-      // La solicitud fue hecha pero no se recibió respuesta (ej. servidor no está corriendo)
-      console.error('No se recibió respuesta del servidor:', error.request);
-      errorMessage.value = 'No se pudo conectar con el servidor. Asegúrate de que el backend esté funcionando.';
-    } else {
-      // Algo más ocurrió al configurar la solicitud
-      console.error('Error al configurar la solicitud:', error.message);
-      errorMessage.value = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
-    }
-  }
+    },
+  },
 };
 </script>
 
