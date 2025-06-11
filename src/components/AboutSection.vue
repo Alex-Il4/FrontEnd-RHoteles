@@ -2,62 +2,62 @@
   <section class="about-section">
     <div class="about-content-wrapper">
       <div class="about-left">
-        <img src="../assets/foto8.jpg" alt="Sobre mí" class="about-image" />
+        <img src="../assets/foto8.jpg" alt="Hoteles para Vacacionar" class="about-image" />
       </div>
       <div class="about-right">
-        <h2 class="section-title">Sobre Mí</h2>
+        <h2 class="section-title">Sobre Nosotros</h2>
         <p class="description">
-          Soy un fotógrafo y videógrafo apasionado con más de 10 años de
-          experiencia capturando momentos únicos y creando narrativas visuales
-          impactantes. Mi enfoque combina técnica profesional con una visión
-          artística distintiva.
+          Somos tu guía definitiva para encontrar los **mejores hoteles para tus vacaciones**.
+          En nuestro sitio, recopilamos y analizamos una amplia gama de opciones de alojamiento
+          para que disfrutes de una estadía inolvidable. Nuestro objetivo es simplificar
+          tu búsqueda y garantizar que encuentres el lugar perfecto.
         </p>
         <p class="description">
-          Mi objetivo es transformar tus ideas en imágenes y videos que cuenten
-          historias, generen emociones y destaquen tu marca o proyecto. Trabajo
-          estrechamente con cada cliente para entender sus necesidades y
-          superar sus expectativas.
+          Con **años de experiencia** en el sector turístico, nuestro equipo se dedica
+          a investigar y seleccionar hoteles que cumplan con los más altos estándares
+          de calidad, comodidad y servicio. Ya sea que busques lujo, aventura o relajación,
+          tenemos algo especial para ti.
         </p>
         <div class="details-grid">
           <div class="specialties">
-            <h3>Especialidades</h3>
+            <h3>Nuestras Categorías</h3>
             <ul>
               <li>
                 <span class="icon">&#10003;</span>
-                <span>Fotografía de eventos</span>
+                <span>Hoteles de Lujo</span>
               </li>
               <li>
                 <span class="icon">&#10003;</span>
-                <span>Retratos profesionales</span>
+                <span>Alojamientos Económicos</span>
               </li>
               <li>
                 <span class="icon">&#10003;</span>
-                <span>Videografía comercial</span>
+                <span>Resorts Todo Incluido</span>
               </li>
               <li>
                 <span class="icon">&#10003;</span>
-                <span>Fotografía deportiva</span>
+                <span>Hoteles Familiares</span>
               </li>
             </ul>
           </div>
           <div class="equipment">
-            <h3>Equipamiento</h3>
+            <h3>Servicios Destacados</h3>
             <ul>
               <li>
-                <span class="icon">&#128247;</span>
-                <span>Cámaras profesionales</span>
+                <span class="icon">&#127760;</span>
+                <span>Guías de Destinos</span>
               </li>
               <li>
-                <span class="icon">&#128746;</span>
-                <span>Drones de última generación</span>
+                <span class="icon">&#128269;</span>
+                <span>Comparación de Precios</span>
               </li>
               <li>
-                <span class="icon">&#128187;</span>
-                <span>Equipo de video 4K</span>
+                <span class="icon">&#128172;</span>
+                <span>Opiniones de Usuarios</span>
               </li>
               <li>
-                <span class="icon">&#128161;</span>
-                <span>Iluminación profesional</span>
+                <span class="icon">&#128196;</span>
+                <span>Ofertas Exclusivas</span>
               </li>
             </ul>
           </div>
@@ -163,11 +163,11 @@ export default {
 .icon {
   margin-right: 10px;
   font-size: 1.2em;
-  color: #4CAF50;
+  color: #4CAF50; /* Changed icon color to a more hotel-friendly green */
 }
 
 .equipment .icon {
-  color: #64B5F6;
+  color: #64B5F6; /* Kept blue for consistency or can be changed */
 }
 
 @media (max-width: 992px) {
