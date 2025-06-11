@@ -47,65 +47,79 @@
   </v-container>
 </template>
 
-<script>
-import axios from 'axios'; // Asegúrate de tener axios instalado: npm install axios
-// Importa el router si lo usas para redirigir
-import router from '../router'; // Ajusta la ruta a tu archivo de router
+<script setup>
+import { ref } from 'vue';
+import { useStore } from 'vuex'; // Importa useStore para acceder al store de Vuex
+import { useRouter } from 'vue-router';
+import axios from 'axios'; // Importa axios
 
-export default {
-  name: 'LoginView', // Asegúrate de que el nombre del componente sea correcto
-  data() {
-    return {
-      email: '',
-      password: '',
-      errorMessage: null,
-      // Si usas visible para la contraseña, asegúrate de que esté aquí también:
-      visible: false, // Añadir esta propiedad si no la tienes
-      // Y también para el carrusel
-      slides: [
-        'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
-        'https://cdn.vuetifyjs.com/images/cards/hotel.jpg',
-        'https://cdn.vuetifyjs.com/images/cards/sunshine.jpg',
-      ],
-      BGLoginCard: 'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg', // Y esta si es una imagen local o URL
-    };
-  },
-  methods: {
-    // Cambiado de handleLogin a login para que coincida con @click="login" en la plantilla
-    async login() {
-      this.errorMessage = null; // Limpiar mensajes de error anteriores
+// 1. Importa tus imágenes del carrusel aquí
+import CarouselImage1 from '../assets/BGLogin.jpg';
+import CarouselImage2 from '../assets/BGLogin2.jpg';
+import CarouselImage3 from '../assets/BGLogin3.jpg';
 
-      try {
-        const response = await axios.post('http://localhost:8081/api/auth/login', { // Ajusta la URL de tu endpoint de login
-          email: this.email,
-          password: this.password,
-        });
+const visible = ref(false); // Para el diálogo de login, si lo usas
+const store = useStore(); // Obtiene la instancia del store
+const router = useRouter();
 
-        // Asumiendo que tu backend devuelve { userId: ..., username: ..., email: ... }
-        const userData = response.data;
+// 3. Define el array 'slides' con las imágenes importadas
+const slides = ref([
+  CarouselImage1,
+  CarouselImage2,
+  CarouselImage3
+]);
 
-        // Despacha una acción para guardar los datos del usuario en Vuex
-        this.$store.dispatch('login', userData); // 'login' es la acción que definimos en el store
+// Define las variables reactivas para el nombre de usuario y la contraseña
+const email = ref(''); // Para el campo de nombre de usuario en el formulario
+const password = ref(''); // Para el campo de contraseña en el formulario
+const errorMessage = ref(''); // Para mostrar mensajes de error al usuario
 
-        // Redirige al usuario a la página principal o a la página de reservaciones
-        router.push('/home'); // Ajusta la ruta a donde quieres redirigir
-        // O si no usas router: window.location.href = '/home';
+const login = async () => {
+  errorMessage.value = ''; // Limpia cualquier mensaje de error anterior
 
-      } catch (error) {
-        console.error('Error al iniciar sesión:', error);
-        if (error.response) {
-          // El servidor respondió con un estado fuera del rango 2xx
-          this.errorMessage = error.response.data.message || 'Credenciales inválidas.';
-        } else if (error.request) {
-          // La solicitud fue hecha pero no se recibió respuesta
-          this.errorMessage = 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.';
-        } else {
-          // Algo pasó al configurar la solicitud que disparó un error
-          this.errorMessage = 'Error inesperado al iniciar sesión.';
-        }
+  try {
+    // Realiza la solicitud POST al endpoint de login de tu backend
+    const response = await axios.post('http://localhost:8081/api/auth/login', {
+      email: email.value,
+      password: password.value
+    });
+
+    if (response.status === 200) {
+      console.log('Login exitoso:', response.data);
+
+      // --- CAMBIO CLAVE AQUÍ: Capturar y guardar el ID de usuario en Vuex ---
+      const userData = response.data; // Asumiendo que response.data contiene { userId: ..., username: ..., email: ... }
+      store.dispatch('login', userData); // Despacha la acción 'login' en tu store de Vuex
+
+      // Redirige al usuario al home
+      router.push('/home');
+    } else {
+      errorMessage.value = 'Fallo al iniciar sesión. Por favor, inténtalo de nuevo.';
+      console.error('Login fallido con status:', response.status);
+    }
+
+  } catch (error) {
+    // Manejo de errores de la solicitud
+    if (error.response) {
+      // El servidor respondió con un código de estado fuera del rango 2xx
+      console.error('Error de respuesta del servidor:', error.response.data);
+      console.error('Código de estado:', error.response.status);
+      errorMessage.value = error.response.data.message || 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
+      if (error.response.status === 401) {
+        errorMessage.value = 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
+      } else {
+        errorMessage.value = 'Ocurrió un error en el servidor. Inténtalo más tarde.';
       }
-    },
-  },
+    } else if (error.request) {
+      // La solicitud fue hecha pero no se recibió respuesta (ej. servidor no está corriendo)
+      console.error('No se recibió respuesta del servidor:', error.request);
+      errorMessage.value = 'No se pudo conectar con el servidor. Asegúrate de que el backend esté funcionando.';
+    } else {
+      // Algo más ocurrió al configurar la solicitud
+      console.error('Error al configurar la solicitud:', error.message);
+      errorMessage.value = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+    }
+  }
 };
 </script>
 
