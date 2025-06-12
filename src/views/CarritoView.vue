@@ -21,7 +21,8 @@
             <v-alert type="error" prominent>
               Lo sentimos, no pudimos cargar tus reservaciones. Por favor, inténtalo de nuevo más tarde.
               <br>
-              <span v-if="!userId" class="font-weight-bold">Asegúrate de que se haya establecido un ID de usuario.</span>
+              <span v-if="!userId" class="font-weight-bold">Asegúrate de que se haya establecido un ID de
+                usuario.</span>
             </v-alert>
           </v-col>
         </v-row>
@@ -32,23 +33,13 @@
 
         <v-container fluid class="w-full max-w-7xl mx-auto">
           <v-row justify="center">
-            <v-col
-              cols="12"
-              sm="6"
-              md="4"
-              lg="3"
-              v-for="reservation in reservations"
-              :key="reservation.id"
-              class="mb-6 d-flex"
-            >
+            <v-col cols="12" sm="6" md="4" lg="3" v-for="reservation in reservations" :key="reservation.id"
+              class="mb-6 d-flex">
               <v-card class="rounded-lg shadow-lg overflow-hidden h-full d-flex flex-column hotel-card">
-                <v-img
-                  :src="getHotelImage(reservation.hotelId)"
-                  :alt="getHotelDetail(reservation.hotelId, 'nombreHotel')"
-                  height="200px"
-                  cover
-                >
-                  <v-card-title class="hotel-card-title">{{ getHotelDetail(reservation.hotelId, 'nombreHotel') }}</v-card-title>
+                <v-img :src="getHotelImage(reservation.hotelId)"
+                  :alt="getHotelDetail(reservation.hotelId, 'nombreHotel')" height="200px" cover>
+                  <v-card-title class="hotel-card-title">{{ getHotelDetail(reservation.hotelId, 'nombreHotel')
+                    }}</v-card-title>
                 </v-img>
 
                 <v-card-text class="text-gray-700 text-base flex-grow">
@@ -56,36 +47,31 @@
                     <v-icon small left>mdi-map-marker</v-icon>
                     {{ getHotelDetail(reservation.hotelId, 'ciudad') }}
                   </div>
-                  <v-rating
-                    :value="getHotelDetail(reservation.hotelId, 'calificacionEstrellas')"
-                    color="amber"
-                    dense
-                    half-increments
-                    readonly
-                    size="20"
-                  ></v-rating>
+                  <v-rating :value="getHotelDetail(reservation.hotelId, 'calificacionEstrellas')" color="amber" dense
+                    half-increments readonly size="20"></v-rating>
                   <p class="description mt-3">{{ getHotelDetail(reservation.hotelId, 'descripcion') }}</p>
                   <div class="mt-3">
-                    <p class="font-weight-medium">Precio por Noche: ${{ getHotelDetail(reservation.hotelId, 'precioPorNoche') ? getHotelDetail(reservation.hotelId, 'precioPorNoche').toFixed(2) : 'N/A' }}</p>
-                    <p class="font-weight-medium">Servicios Exclusivos: {{ getHotelDetail(reservation.hotelId, 'serviciosExclusivos') || 'No especificado' }}</p>
-                    <p class="font-weight-medium">Capacidad Máxima: {{ getHotelDetail(reservation.hotelId, 'capacidadMaxima') || 'N/A' }} personas</p>
+                    <p class="font-weight-medium">Precio por Noche: ${{ getHotelDetail(reservation.hotelId,
+                      'precioPorNoche') ? getHotelDetail(reservation.hotelId, 'precioPorNoche').toFixed(2) : 'N/A' }}
+                    </p>
+                    <p class="font-weight-medium">Servicios Exclusivos: {{ getHotelDetail(reservation.hotelId,
+                      'serviciosExclusivos') || 'No especificado' }}</p>
+                    <p class="font-weight-medium">Capacidad Máxima: {{ getHotelDetail(reservation.hotelId,
+                      'capacidadMaxima') || 'N/A' }} personas</p>
                   </div>
                 </v-card-text>
 
                 <v-card-actions class="d-flex flex-column align-start pt-0">
-                    <p class="text-lg font-bold text-blue-600 mb-4 ml-4">
-                        Precio Total Reservación: ${{ reservation.precioTotal ? reservation.precioTotal.toFixed(2) : 'N/A' }}
-                    </p>
-                    <v-btn
-                        color="red"
-                        dark
-                        block
-                        class="rounded-md transition duration-300 ease-in-out shadow-md hover:shadow-lg"
-                        @click="confirmDeleteReservation(reservation.id)"
-                    >
-                        Eliminar reservación
-                        <v-icon right>mdi-delete</v-icon>
-                    </v-btn>
+                  <p class="text-lg font-bold text-blue-600 mb-4 ml-4">
+                    Precio Total Reservación: ${{ reservation.precioTotal ? reservation.precioTotal.toFixed(2) : 'N/A'
+                    }}
+                  </p>
+                  <v-btn color="red" dark block
+                    class="rounded-md transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                    @click="confirmDeleteReservation(reservation.id)">
+                    Eliminar reservación
+                    <v-icon right>mdi-delete</v-icon>
+                  </v-btn>
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -97,67 +83,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watchEffect } from 'vue'; // Import watchEffect
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import axios from 'axios';
 import Menu from '../components/menu.vue';
 
 // Importar imágenes locales
 import hotel1Img from '../assets/hotel1.jpg';
 import hotel2Img from '../assets/hotel2.jpg';
-// Agrega más imports si tienes más imágenes locales para hoteles con otros IDs:
-// import hotel3Img from '../assets/hotel3.jpg';
 
 const router = useRouter();
+const store = useStore();
 const reservations = ref([]);
 const allHotels = ref([]);
 const loading = ref(true);
 const error = ref(false);
-const userId = ref(null); // Ahora será reactivo y se cargará del localStorage
 
-// Mapeo de IDs de hotel a sus imágenes locales (igual que en HotelesList)
+// Usa una propiedad computada para obtener userId del store de Vuex
+const userId = computed(() => store.getters.getUserId); 
+
+// Mapeo de IDs de hotel a sus imágenes locales
 const localHotelImages = {
   1: hotel1Img,
   2: hotel2Img,
-  // Continúa mapeando para otros IDs de hotel:
-  // 3: hotel3Img,
 };
 
-// Función para obtener la imagen correcta del hotel
 const getHotelImage = (hotelId) => {
   return localHotelImages[hotelId] || 'https://via.placeholder.com/400x200/CCCCCC/000000?text=Imagen+No+Disponible';
 };
 
-// Función para obtener detalles específicos del hotel
 const getHotelDetail = (hotelId, property) => {
   const hotel = allHotels.value.find(h => h.hotelID === hotelId);
-  return hotel ? hotel[property] : 'N/A'; // Usar 'N/A' para propiedades no encontradas
+  return hotel ? hotel[property] : 'N/A';
 };
 
-// Función para cargar todas las reservaciones del usuario y los detalles de los hoteles
 const fetchReservationsAndHotels = async () => {
   loading.value = true;
   error.value = false;
-  
-  // Obtener el userId del localStorage
-  const storedUserId = localStorage.getItem('currentUserId');
-  if (storedUserId) {
-    userId.value = parseInt(storedUserId); // Convertir a número
-  } else {
-    // Si no hay UserID en localStorage, se puede generar uno, pedirlo, o mostrar un error.
-    // Para este ejemplo, lo dejaremos como null y mostraremos un mensaje de error.
-    console.warn('No se encontró un UserID en localStorage. No se cargarán reservas.');
-    error.value = true; // Indicar un error si no hay ID de usuario
-    loading.value = false;
-    return; // Salir de la función si no hay ID
+
+  // Usa el userId de la propiedad computada
+  if (!userId.value) {
+    console.warn('No hay un UserID disponible en el store. No se cargarán reservas.');
+    loading.value = false; // Importante para quitar el estado de carga
+    return; // Salir si el userId no está presente
   }
 
   try {
-    // 1. Cargar la lista completa de hoteles
     const hotelsResponse = await axios.get('http://localhost:8081/api/hoteles');
     allHotels.value = hotelsResponse.data;
 
-    // 2. Cargar las reservaciones del usuario específico usando el userId del localStorage
     const reservationsResponse = await axios.get(`http://localhost:8081/api/reservations/user/${userId.value}`);
     reservations.value = reservationsResponse.data;
 
@@ -169,33 +144,46 @@ const fetchReservationsAndHotels = async () => {
   }
 };
 
-// Función para confirmar y eliminar una reservación
 const confirmDeleteReservation = async (reservationId) => {
   if (confirm(`¿Estás seguro de que quieres eliminar la reservación ID: ${reservationId}?`)) {
     try {
       await axios.delete(`http://localhost:8081/api/reservations/${reservationId}`);
-      // Si la eliminación es exitosa, recargar las reservaciones para actualizar la vista
-      await fetchReservationsAndHotels();
+      await fetchReservationsAndHotels(); // Recargar después de eliminar
       alert('Reservación eliminada con éxito.');
     } catch (err) {
       console.error('Error al eliminar reservación:', err);
-      // Podrías verificar si el error es 404 (no encontrado) o 403 (prohibido)
       if (err.response && err.response.status === 404) {
-          alert('La reservación no fue encontrada. Posiblemente ya fue eliminada.');
+        alert('La reservación no fue encontrada. Posiblemente ya fue eliminada.');
       } else {
-          alert('Hubo un error al eliminar la reservación. Por favor, inténtalo de nuevo.');
+        alert('Hubo un error al eliminar la reservación. Por favor, inténtalo de nuevo.');
       }
     }
   }
 };
 
-// Navegar de vuelta a la página principal de hoteles
 function volverHome() {
   router.push('/hoteles');
 }
 
-// Al montar el componente, cargar las reservaciones y hoteles
-onMounted(fetchReservationsAndHotels);
+// **CAMBIO CLAVE: Usa watchEffect para reaccionar al cambio de userId**
+watchEffect(() => {
+  // Solo intenta cargar las reservas si userId tiene un valor
+  if (userId.value) {
+    fetchReservationsAndHotels();
+  } else {
+    // Si userId es null, puedes limpiar las reservas o mostrar un mensaje
+    reservations.value = [];
+    loading.value = false;
+    // console.log("UserID es nulo, esperando a que se cargue."); // Puedes dejar esto para depuración
+  }
+});
+
+// onMounted ya no es estrictamente necesario para *iniciar* la carga,
+// ya que watchEffect lo hará cuando userId esté disponible.
+// Sin embargo, si tienes otras inicializaciones que deben ocurrir una sola vez
+// al montar el componente, puedes mantener onMounted.
+// onMounted(fetchReservationsAndHotels); // <-- Descomenta si necesitas más cosas aquí
+
 </script>
 
 <style scoped>
@@ -225,7 +213,7 @@ body {
 .hotel-card-title {
   font-size: 1.5em;
   font-weight: bold;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
   padding: 16px;
   color: white;
 }
@@ -248,9 +236,9 @@ body {
 }
 
 .v-btn.mb-6.mx-auto.d-block {
-    margin-bottom: 24px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+  margin-bottom: 24px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
 }
 </style>

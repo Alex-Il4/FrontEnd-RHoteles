@@ -9,6 +9,18 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 
+async function initApp() {
+  // Ensure the store is initialized before mounting the app
+  await store.dispatch('initializeAuth'); // <-- Await this action!
+
+  const app = createApp(App);
+  app.use(store);
+  app.use(router);
+  app.mount('#app');
+}
+
+initApp();
+
 const vuetify = createVuetify({
   components,
   directives,
