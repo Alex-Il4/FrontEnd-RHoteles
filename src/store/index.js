@@ -4,10 +4,13 @@ import { createStore } from 'vuex';
 const store = createStore({
   state: {
     isAuthenticated: false,
+    userId: null,
   },
   mutations: {
     setAuthenticated(state, status) {
       state.isAuthenticated = status;
+      state.userId = userData.userId;
+
     },
   },
   actions: {
