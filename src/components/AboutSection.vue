@@ -68,8 +68,27 @@
 </template>
 
 <script>
+import { useStore } from 'vuex';
+import { onMounted } from 'vue'; // Importa onMounted para ejecutar código después de que el componente se monte
+
 export default {
   name: 'AboutSection',
+  setup() {
+    const store = useStore();
+
+    // Puedes acceder directamente al valor reactivo
+    const userId = store.state.userId;
+
+    // O puedes usar onMounted para asegurarte de que el componente esté listo
+    onMounted(() => {
+      console.log('ID de usuario almacenado en Vuex:', store.state.userId);
+    });
+
+    // Si quieres que el userId esté disponible en la plantilla, debes retornarlo
+    return {
+      userId
+    };
+  }
 };
 </script>
 
