@@ -1,27 +1,18 @@
 <template>
   <div>
-    <Menu />
     <HeroSection />
     <AboutSection />
-    
   </div>
 </template>
 
-<script>
-import Menu from '../components/menu.vue';
-import HeroSection from '../components/HeroSection.vue';
-import AboutSection from '../components/AboutSection.vue';
+<script setup>
+import HeroSection from '../components/HeroSection.vue'; // Asegúrate de la ruta correcta
+import AboutSection from '../components/AboutSection.vue'; // Asegúrate de la ruta correcta
 
-export default {
-  name: 'HomeView',
-  components: {
-    Menu,
-    HeroSection,
-    AboutSection
-  }
-};
+// En <script setup>, no necesitas el objeto 'export default' para registrar componentes.
+// Los componentes importados son automáticamente accesibles en el template.
 </script>
 
 <style>
-
+/* Cualquier estilo específico para HomeView si lo tienes */
 </style>

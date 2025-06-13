@@ -32,12 +32,27 @@
             density="compact" placeholder="Enter your password" prepend-inner-icon="mdi-lock-outline" variant="outlined"
             @click:append-inner="visible = !visible" v-model="password"></v-text-field>
 
-          <v-btn class="mb-8" color="blue" size="large" variant="tonal" block @click="login">
+          <v-alert
+            v-if="errorMessage"
+            type="error"
+            dense
+            text
+            class="mb-4"
+          >
+            {{ errorMessage }}
+          </v-alert>
+
+          <v-btn class="mb-8" color="blue" size="large" variant="tonal" block @click="handleLogin">
             Log In
           </v-btn>
 
           <v-card-text class="text-center">
-            <a class="text-blue text-decoration-none" href="#" rel="noopener noreferrer" target="_blank">
+            <a
+              class="text-blue text-decoration-none"
+              href="#"
+              rel="noopener noreferrer"
+              target="_blank"
+              @click.prevent="goToNewAccount">
               Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
             </a>
           </v-card-text>
@@ -51,74 +66,90 @@
 import { ref } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import axios from 'axios'; // Importa axios
+// No necesitas importar axios directamente aquí si toda la lógica de la API está en la acción de Vuex.
+// import axios from 'axios';
 
-// 1. Importa tus imágenes del carrusel aquí
+// Importa tus imágenes del carrusel aquí
 import CarouselImage1 from '../assets/BGLogin.jpg';
 import CarouselImage2 from '../assets/BGLogin2.jpg';
 import CarouselImage3 from '../assets/BGLogin3.jpg';
+// Importa la imagen para el fondo de la tarjeta de login
+//import BGLoginCard from '../assets/BGLoginCard.jpg'; // Asegúrate de que esta ruta sea correcta
 
-const visible = ref(false); // Para el diálogo de login, si lo usas
-const store = useStore();
+const visible = ref(false); // Para el control de visibilidad de la contraseña
+const store = useStore(); // Instancia del store de Vuex
 const router = useRouter();
 
-// 3. Define el array 'slides' con las imágenes importadas
+// Define el array 'slides' con las imágenes importadas para el carrusel
 const slides = ref([
   CarouselImage1,
   CarouselImage2,
   CarouselImage3
 ]);
 
-// Define las variables reactivas para el nombre de usuario y la contraseña
-const email = ref(''); // Para el campo de nombre de usuario en el formulario
-const password = ref(''); // Para el campo de contraseña en el formulario
+// Variables reactivas para los campos del formulario
+const email = ref('');
+const password = ref('');
 const errorMessage = ref(''); // Para mostrar mensajes de error al usuario
 
-const login = async () => {
+// Función que se llama al hacer clic en el botón "Log In"
+const handleLogin = async () => {
   errorMessage.value = ''; // Limpia cualquier mensaje de error anterior
 
   try {
-    // Realiza la solicitud POST al endpoint de login de tu backend
-    const response = await axios.post('http://localhost:8081/api/auth/login', {
+    // Despacha la acción 'login' del store de Vuex con las credenciales.
+    // La acción de Vuex se encargará de la llamada a la API y de actualizar el estado.
+    await store.dispatch('login', {
       email: email.value,
       password: password.value
     });
 
-    if (response.status === 200) {
-      console.log('Login exitoso:', response.data);
-
-      router.push('/home');
+    // Si la acción 'login' en el store no lanzó un error, significa que la autenticación fue exitosa.
+    if (store.getters.isAuthenticated) {
+      console.log('Login exitoso en el componente. Redirigiendo a /home...');
+      // Accede al userId después de que la acción de Vuex lo haya establecido en el store
+      console.log('ID de usuario después del login (desde Vuex):', store.getters.getUserId);
+      router.push('/home'); // Redirige a la página de inicio
     } else {
+      // Este caso sería si la acción 'login' en el store finaliza sin lanzar un error,
+      // pero por alguna razón interna no establece isAuthenticated a true.
+      // Podría ser redundante si la acción siempre lanza un error en caso de fallo.
       errorMessage.value = 'Fallo al iniciar sesión. Por favor, inténtalo de nuevo.';
-      console.error('Login fallido con status:', response.status);
     }
 
   } catch (error) {
-    // Manejo de errores de la solicitud
+    // Manejo de errores que son lanzados por la acción 'login' de Vuex.
+    // El error.response.data (si existe) contendrá detalles del error desde el servidor.
+    console.error('Error al intentar iniciar sesión (componente handleLogin):', error);
+
     if (error.response) {
-      // El servidor respondió con un código de estado fuera del rango 2xx
-      console.error('Error de respuesta del servidor:', error.response.data);
-      console.error('Código de estado:', error.response.status);
-      errorMessage.value = error.response.data || 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
+      // Errores específicos del servidor (ej. 401 Unauthorized)
       if (error.response.status === 401) {
-        errorMessage.value = 'Credenciales inválidas. Por favor, verifica tu nombre de usuario y contraseña.';
+        errorMessage.value = 'Credenciales inválidas. Por favor, verifica tu correo electrónico y contraseña.';
+      } else if (error.response.data && error.response.data.message) {
+        // Si el backend envía un mensaje de error específico
+        errorMessage.value = error.response.data.message;
       } else {
-        errorMessage.value = 'Ocurrió un error en el servidor. Inténtalo más tarde.';
+        errorMessage.value = 'Ocurrió un error en el servidor. Por favor, inténtalo más tarde.';
       }
     } else if (error.request) {
-      // La solicitud fue hecha pero no se recibió respuesta (ej. servidor no está corriendo)
-      console.error('No se recibió respuesta del servidor:', error.request);
+      // Error de red (servidor no responde)
       errorMessage.value = 'No se pudo conectar con el servidor. Asegúrate de que el backend esté funcionando.';
     } else {
-      // Algo más ocurrió al configurar la solicitud
-      console.error('Error al configurar la solicitud:', error.message);
+      // Otros errores (ej. configuración de Axios)
       errorMessage.value = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
     }
   }
 };
+
+// Función para redirigir a la página de registro
+const goToNewAccount = () => {
+  router.push('/new-account');
+};
 </script>
 
 <style scoped>
+/* Tu estilo existente, no se modifica */
 .login-page-background {
   background-color: transparent !important;
 }

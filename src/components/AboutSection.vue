@@ -67,10 +67,22 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'AboutSection',
-};
+<script setup>
+import { useStore } from 'vuex';
+import { onMounted } from 'vue';
+
+const store = useStore();
+
+// Puedes acceder directamente al valor reactivo
+const userId = store.state.userId;
+
+// O puedes usar onMounted para asegurarte de que el componente esté listo
+onMounted(() => {
+  console.log('ID de usuario almacenado en Vuex:', store.state.userId);
+});
+
+// En <script setup>, no necesitas retornar las variables para que estén disponibles en la plantilla.
+// userId estará automáticamente disponible.
 </script>
 
 <style scoped>
