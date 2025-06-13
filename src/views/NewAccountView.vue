@@ -46,21 +46,6 @@
             @click:append-inner="visible = !visible"
             v-model="password"
           ></v-text-field>
-
-          <!-- ///////////////CAMPO QUE PERMITE CONFIRMAR LA CONTRASEÑA ////////////////-->
-           
-          <!-- <div class="text-subtitle-1 text-medium-emphasis">Confirmar Contraseña</div>
-          <v-text-field
-            :append-inner-icon="visibleConfirm ? 'mdi-eye-off' : 'mdi-eye'"
-            :type="visibleConfirm ? 'text' : 'password'"
-            density="compact"
-            placeholder="Confirma tu contraseña"
-            prepend-inner-icon="mdi-lock-check-outline"
-            variant="outlined"
-            @click:append-inner="visibleConfirm = !visibleConfirm"
-            v-model="confirmPassword"
-          ></v-text-field>
-        -->
           <v-btn
             class="mb-8 mt-4"
             color="blue"
@@ -92,30 +77,41 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios'; // Importa axios
 
 const router = useRouter();
 
 const username = ref('');
 const email = ref('');
 const password = ref('');
-const confirmPassword = ref('');
-const visible = ref(false); // Muestra y oculta la contraseña
-//const visibleConfirm = ref(false);  -------- NO SE USA EL CAMPO DE CONFIRMACIÓN
+const visible = ref(false);
 
-/*
------------------Aqui va donde se guarda la información de la cuenta
-const createAccount = () => {
-  if (password.value !== confirmPassword.value) {
-    alert('Las contraseñas no coinciden.');
-    return;
+// Asegúrate de que esta URL base apunte a donde se está ejecutando tu aplicación Spring Boot.
+// Por ejemplo, si tu Spring Boot está en localhost:8080, sería 'http://localhost:8080'.
+const API_BASE_URL = 'http://localhost:8080';
+
+const createAccount = async () => {
+  try {
+    // El endpoint completo para prueba http://localhost:8081/api/usuarios
+    //const response = await axios.post(`${API_BASE_URL}/api/usuarios`, {
+    const response = await axios.post(`http://localhost:8081/api/usuarios`, {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    });
+
+    console.log('Registro exitoso:', response.data);
+    alert('¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.');
+    router.push('/'); // Redirigir a la página de inicio de sesión
+  } catch (error) {
+    console.error('Fallo el registro:', error.response ? error.response.data : error.message);
+    if (error.response && error.response.data) {
+      alert(`Error al registrar la cuenta: ${error.response.data.message || error.response.data}`);
+    } else {
+      alert('Error al registrar la cuenta. Por favor, inténtalo de nuevo.');
+    }
   }
-  console.log('Crear cuenta con:', {
-    username: username.value,
-    email: email.value,
-    password: password.value
-  });
 };
-*/
 
 const goToLogin = () => {
   router.push('/');
