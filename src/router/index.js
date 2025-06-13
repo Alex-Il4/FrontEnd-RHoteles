@@ -5,10 +5,12 @@ import Home from '../views/HomeView.vue';
 import Carrito from '../views/CarritoView.vue';
 import NewAccount from '../views/NewAccountView.vue';
 import HotelesView from '../views/HotelesView.vue';
+import AboutSection from '../components/AboutSection.vue';
 
 const routes = [
+  
   {
-    path: '/home',
+    path: '/',
     name: 'home',
     component: Home,
     meta: {

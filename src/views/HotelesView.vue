@@ -1,7 +1,5 @@
 <template>
   <v-app>
-    <Menu />
-
     <v-main>
       <v-container class="my-8">
         <h2 class="text-h4 text-center mb-6">Reserva los hoteles de tus sueños</h2>
@@ -55,8 +53,6 @@
 </template>
 
 <script setup>
-// Importaciones necesarias
-import Menu from '../components/menu.vue'; // Asegúrate de que la ruta sea correcta para tu componente Menu
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useStore } from 'vuex'; // Para acceder al store de Vuex
