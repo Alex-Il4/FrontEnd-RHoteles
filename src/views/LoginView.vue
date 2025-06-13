@@ -109,7 +109,7 @@ const handleLogin = async () => {
       console.log('Login exitoso en el componente. Redirigiendo a /home...');
       // Accede al userId después de que la acción de Vuex lo haya establecido en el store
       console.log('ID de usuario después del login (desde Vuex):', store.getters.getUserId);
-      router.push('/home'); // Redirige a la página de inicio
+      router.push('/'); // Redirige a la página de inicio
     } else {
       // Este caso sería si la acción 'login' en el store finaliza sin lanzar un error,
       // pero por alguna razón interna no establece isAuthenticated a true.
