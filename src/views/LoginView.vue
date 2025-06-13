@@ -37,7 +37,12 @@
           </v-btn>
 
           <v-card-text class="text-center">
-            <a class="text-blue text-decoration-none" href="#" rel="noopener noreferrer" target="_blank">
+            <a
+              class="text-blue text-decoration-none"
+              href="#"
+              rel="noopener noreferrer"
+              target="_blank"
+              @click.prevent="goToNewAccount">
               Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
             </a>
           </v-card-text>
@@ -115,6 +120,11 @@ const login = async () => {
       errorMessage.value = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
     }
   }
+};
+
+//Dirige a la vista de registro
+const goToNewAccount = () => {
+  router.push('/new-account');
 };
 </script>
 

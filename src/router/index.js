@@ -3,6 +3,7 @@ import App from '../App.vue';
 import Login from '../views/LoginView.vue';
 import Home from '../views/HomeView.vue';
 import Carrito from '../views/CarritoView.vue';
+import NewAccount from '../views/NewAccountView.vue';
 import HotelesView from '../views/HotelesView.vue';
 
 const routes = [
@@ -29,7 +30,11 @@ const routes = [
     name: 'hoteles',
     component: HotelesView,
   },
-
+  {
+    path: '/new-account',
+    name: 'new-account',
+    component: NewAccount,
+  }
 ];
 
 const router = createRouter({
