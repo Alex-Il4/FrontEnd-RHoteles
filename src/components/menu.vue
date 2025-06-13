@@ -34,7 +34,7 @@
       <v-btn
         icon="mdi-account-circle"
         title="Ver Perfil / Iniciar Sesión"
-        @click="goToPage('/perfil')"
+        @click="goToPage('/login')"
       ></v-btn>
 
       <!-- Menú expandible para Cerrar Sesión y otras opciones de usuario -->

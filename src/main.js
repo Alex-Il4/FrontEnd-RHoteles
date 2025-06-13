@@ -9,18 +9,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 
-async function initApp() {
-  // Ensure the store is initialized before mounting the app
-  await store.dispatch('initializeAuth'); // <-- Await this action!
-
-  const app = createApp(App);
-  app.use(store);
-  app.use(router);
-  app.mount('#app');
-}
-
-initApp();
-
+// 1. Crea la instancia de Vuetify PRIMERO
 const vuetify = createVuetify({
   components,
   directives,
@@ -41,8 +30,22 @@ const vuetify = createVuetify({
   },
 });
 
-const app = createApp(App);
-app.use(router);
-app.use(store);
-app.use(vuetify);
-app.mount('#app');
+// Función asíncrona para inicializar la aplicación
+async function initApp() {
+  // Asegúrate de que el store se inicialice ANTES de montar la aplicación
+  // Esto es crucial para que el estado de autenticación esté listo
+  await store.dispatch('initializeAuth'); // <-- ¡Esto es correcto y debe ser esperado!
+
+  const app = createApp(App);
+
+  // 2. Usa todos los plugins (store, router, vuetify) en la misma instancia de la aplicación
+  app.use(store);
+  app.use(router);
+  app.use(vuetify); // Usa la instancia de Vuetify aquí
+
+  // 3. Monta la aplicación UNA SOLA VEZ
+  app.mount('#app');
+}
+
+// Llama a la función de inicialización
+initApp();

@@ -9,7 +9,7 @@
           <v-icon right>mdi-plus</v-icon>
         </v-btn>
 
-        <h1 class="text-h4 text-sm-h3 text-md-h2 font-bold text-gray-800 mb-8 text-center">Tus Reservaciones</h1>
+        <h1 class="text-h4 text-sm-h3 text-md-h2 font-bold text-gray-800 mb-8 text-center">Reservaciones</h1>
 
         <v-row v-if="loading" justify="center">
           <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
@@ -21,14 +21,18 @@
             <v-alert type="error" prominent>
               Lo sentimos, no pudimos cargar tus reservaciones. Por favor, inténtalo de nuevo más tarde.
               <br>
-              <span v-if="!userId" class="font-weight-bold">Asegúrate de que se haya establecido un ID de
-                usuario.</span>
+              <span v-if="!userId" class="font-weight-bold">Asegúrate de haber iniciado sesión.</span>
+              <br>
+              <span v-if="errorMessage">{{ errorMessage }}</span>
             </v-alert>
           </v-col>
         </v-row>
 
         <div v-else-if="reservations.length === 0" class="text-center text-gray-700 text-lg">
           No hay reservaciones realizadas para el usuario actual (ID: {{ userId || 'no definido' }}).
+          <div v-if="userId && !loading">
+            <p>Es posible que no tengas reservas o que haya habido un problema al cargarlas.</p>
+          </div>
         </div>
 
         <v-container fluid class="w-full max-w-7xl mx-auto">
@@ -36,28 +40,25 @@
             <v-col cols="12" sm="6" md="4" lg="3" v-for="reservation in reservations" :key="reservation.id"
               class="mb-6 d-flex">
               <v-card class="rounded-lg shadow-lg overflow-hidden h-full d-flex flex-column hotel-card">
-                <v-img :src="getHotelImage(reservation.hotelId)"
-                  :alt="getHotelDetail(reservation.hotelId, 'nombreHotel')" height="200px" cover>
-                  <v-card-title class="hotel-card-title">{{ getHotelDetail(reservation.hotelId, 'nombreHotel')
+                <v-img :src="getHotelImage(reservation.hotel?.hotelID)"
+                  :alt="reservation.hotel?.nombreHotel" height="200px" cover>
+                  <v-card-title class="hotel-card-title">{{ reservation.hotel?.nombreHotel
                     }}</v-card-title>
                 </v-img>
 
                 <v-card-text class="text-gray-700 text-base flex-grow">
                   <div class="text-subtitle-1 mb-2">
                     <v-icon small left>mdi-map-marker</v-icon>
-                    {{ getHotelDetail(reservation.hotelId, 'ciudad') }}
+                    {{ reservation.hotel?.ciudad }}
                   </div>
-                  <v-rating :value="getHotelDetail(reservation.hotelId, 'calificacionEstrellas')" color="amber" dense
+                  <v-rating :value="reservation.hotel?.calificacionEstrellas" color="amber" dense
                     half-increments readonly size="20"></v-rating>
-                  <p class="description mt-3">{{ getHotelDetail(reservation.hotelId, 'descripcion') }}</p>
+                  <p class="description mt-3">{{ reservation.hotel?.descripcion }}</p>
                   <div class="mt-3">
-                    <p class="font-weight-medium">Precio por Noche: ${{ getHotelDetail(reservation.hotelId,
-                      'precioPorNoche') ? getHotelDetail(reservation.hotelId, 'precioPorNoche').toFixed(2) : 'N/A' }}
+                    <p class="font-weight-medium">Precio por Noche: ${{ reservation.hotel?.precioPorNoche ? reservation.hotel.precioPorNoche.toFixed(2) : 'N/A' }}
                     </p>
-                    <p class="font-weight-medium">Servicios Exclusivos: {{ getHotelDetail(reservation.hotelId,
-                      'serviciosExclusivos') || 'No especificado' }}</p>
-                    <p class="font-weight-medium">Capacidad Máxima: {{ getHotelDetail(reservation.hotelId,
-                      'capacidadMaxima') || 'N/A' }} personas</p>
+                    <p class="font-weight-medium">Servicios Exclusivos: {{ reservation.hotel?.serviciosExclusivos || 'No especificado' }}</p>
+                    <p class="font-weight-medium">Capacidad Máxima: {{ reservation.hotel?.capacidadMaxima || 'N/A' }} personas</p>
                   </div>
                 </v-card-text>
 
@@ -83,80 +84,131 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watchEffect } from 'vue'; // Import watchEffect
-import { useRouter } from 'vue-router';
+import { ref, computed, watchEffect } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import axios from 'axios';
 import Menu from '../components/menu.vue';
 
-// Importar imágenes locales
+// Importar imágenes locales. Asegúrate de que estas rutas son correctas.
 import hotel1Img from '../assets/hotel1.jpg';
 import hotel2Img from '../assets/hotel2.jpg';
+// Si tienes más imágenes de hoteles, impórtalas aquí:
+// import hotel3Img from '../assets/hotel3.jpg';
 
 const router = useRouter();
+const route = useRoute();
 const store = useStore();
+
 const reservations = ref([]);
-const allHotels = ref([]);
 const loading = ref(true);
 const error = ref(false);
+const errorMessage = ref(''); // Nuevo estado para mensajes de error específicos
 
-// Usa una propiedad computada para obtener userId del store de Vuex
-const userId = computed(() => store.getters.getUserId); 
+const userId = computed(() => store.getters.getUserId);
 
-// Mapeo de IDs de hotel a sus imágenes locales
 const localHotelImages = {
   1: hotel1Img,
   2: hotel2Img,
 };
 
 const getHotelImage = (hotelId) => {
+  // Ahora hotelId viene de reservation.hotel.hotelID
   return localHotelImages[hotelId] || 'https://via.placeholder.com/400x200/CCCCCC/000000?text=Imagen+No+Disponible';
 };
 
-const getHotelDetail = (hotelId, property) => {
-  const hotel = allHotels.value.find(h => h.hotelID === hotelId);
-  return hotel ? hotel[property] : 'N/A';
-};
-
-const fetchReservationsAndHotels = async () => {
+const fetchReservationsAndHotels = async () => { // Renombrado de fetchReservationsAndHotels para reflejar que no carga hoteles por separado
   loading.value = true;
   error.value = false;
+  errorMessage.value = ''; // Limpiar mensaje de error anterior
 
-  // Usa el userId de la propiedad computada
   if (!userId.value) {
-    console.warn('No hay un UserID disponible en el store. No se cargarán reservas.');
-    loading.value = false; // Importante para quitar el estado de carga
-    return; // Salir si el userId no está presente
+    console.warn('fetchReservations: No hay un UserID disponible en el store. No se cargarán reservas.');
+    loading.value = false;
+    error.value = true;
+    errorMessage.value = 'Necesitas iniciar sesión para ver tus reservaciones.';
+    return;
   }
 
   try {
-    const hotelsResponse = await axios.get('http://localhost:8081/api/hoteles');
-    allHotels.value = hotelsResponse.data;
-
+    // 2. Obtener las reservas para el usuario actual (ahora con detalles de hotel anidados)
+    console.log(`fetchReservations: Intentando obtener reservas para userId: ${userId.value}...`);
     const reservationsResponse = await axios.get(`http://localhost:8081/api/reservations/user/${userId.value}`);
     reservations.value = reservationsResponse.data;
+    console.log('fetchReservations: Reservas obtenidas:', reservations.value);
 
   } catch (err) {
-    console.error('Error al cargar reservaciones o hoteles:', err);
+    console.error('fetchReservations: Error al cargar reservaciones:', err);
     error.value = true;
+    if (err.response) {
+      errorMessage.value = `Error del servidor: ${err.response.status} - ${err.response.data.message || 'Error desconocido'}`;
+      console.error('Detalles del error de respuesta:', err.response.data);
+    } else if (err.request) {
+      errorMessage.value = 'No se pudo conectar con el servidor. Asegúrate de que el backend esté en ejecución.';
+      console.error('No se recibió respuesta del servidor:', err.request);
+    } else {
+      errorMessage.value = 'Error al configurar la solicitud. Por favor, revisa la consola.';
+      console.error('Error de configuración de solicitud:', err.message);
+    }
   } finally {
     loading.value = false;
   }
 };
 
-const confirmDeleteReservation = async (reservationId) => {
-  if (confirm(`¿Estás seguro de que quieres eliminar la reservación ID: ${reservationId}?`)) {
+const createReservationFromQuery = async () => {
+  const hotelIdFromQuery = route.query.hotelId;
+  const precioPorNocheFromQuery = route.query.precioPorNoche;
+
+  if (hotelIdFromQuery && precioPorNocheFromQuery && userId.value) {
+    console.log(`createReservationFromQuery: Intentando crear reserva para HotelID: ${hotelIdFromQuery}, Precio: ${precioPorNocheFromQuery} para UserID: ${userId.value}`);
     try {
-      await axios.delete(`http://localhost:8081/api/reservations/${reservationId}`);
-      await fetchReservationsAndHotels(); // Recargar después de eliminar
-      alert('Reservación eliminada con éxito.');
+      const newReservation = {
+        userId: userId.value,
+        hotel: { hotelID: parseInt(hotelIdFromQuery) }, // Envía el ID del hotel dentro de un objeto hotel
+        precioTotal: parseFloat(precioPorNocheFromQuery)
+      };
+
+      const response = await axios.post('http://localhost:8081/api/reservations', newReservation);
+      console.log('createReservationFromQuery: Respuesta de creación de reserva:', response.data);
+      alert('¡Hotel reservado con éxito!');
+
+      router.replace({ query: null }); // Limpiar los parámetros de la URL
+
     } catch (err) {
-      console.error('Error al eliminar reservación:', err);
-      if (err.response && err.response.status === 404) {
-        alert('La reservación no fue encontrada. Posiblemente ya fue eliminada.');
-      } else {
-        alert('Hubo un error al eliminar la reservación. Por favor, inténtalo de nuevo.');
+      console.error('createReservationFromQuery: Error al crear la reserva desde la URL:', err);
+      let alertMessage = 'Hubo un error al intentar reservar el hotel. Por favor, inténtalo de nuevo.';
+      if (err.response) {
+        alertMessage = `Error al reservar: ${err.response.data.message || 'Error desconocido del servidor.'}`;
+      } else if (err.request) {
+        alertMessage = 'No se pudo conectar con el servidor para reservar. Asegúrate de que el backend esté en ejecución.';
       }
+      alert(alertMessage);
+    }
+  }
+};
+
+const confirmDeleteReservation = async (id) => {
+  if (confirm(`¿Estás seguro de que quieres eliminar la reservación ID: ${id}?`)) {
+    try {
+      console.log(`confirmDeleteReservation: Intentando eliminar reserva con ID: ${id}...`);
+      await axios.delete(`http://localhost:8081/api/reservations/${id}`);
+      console.log(`confirmDeleteReservation: Reserva ID ${id} eliminada.`);
+      alert('Reservación eliminada con éxito.');
+      await fetchReservationsAndHotels(); // Recargar las reservas
+
+    } catch (err) {
+      console.error('confirmDeleteReservation: Error al eliminar reservación:', err);
+      let alertMessage = 'Hubo un error al eliminar la reservación. Por favor, inténtalo de nuevo.';
+      if (err.response) {
+        if (err.response.status === 404) {
+          alertMessage = 'La reservación no fue encontrada. Posiblemente ya fue eliminada o no existe.';
+        } else {
+          alertMessage = `Error al eliminar: ${err.response.data.message || 'Error desconocido del servidor.'}`;
+        }
+      } else if (err.request) {
+        alertMessage = 'No se pudo conectar con el servidor para eliminar. Asegúrate de que el backend esté en ejecución.';
+      }
+      alert(alertMessage);
     }
   }
 };
@@ -165,25 +217,19 @@ function volverHome() {
   router.push('/hoteles');
 }
 
-// **CAMBIO CLAVE: Usa watchEffect para reaccionar al cambio de userId**
 watchEffect(() => {
-  // Solo intenta cargar las reservas si userId tiene un valor
   if (userId.value) {
+    console.log(`watchEffect: UserID detectado: ${userId.value}.`);
+    createReservationFromQuery();
     fetchReservationsAndHotels();
   } else {
-    // Si userId es null, puedes limpiar las reservas o mostrar un mensaje
     reservations.value = [];
     loading.value = false;
-    // console.log("UserID es nulo, esperando a que se cargue."); // Puedes dejar esto para depuración
+    error.value = true;
+    errorMessage.value = 'Inicia sesión para ver tus reservas.';
+    console.log("watchEffect: UserID es nulo, esperando a que se cargue para mostrar reservas.");
   }
 });
-
-// onMounted ya no es estrictamente necesario para *iniciar* la carga,
-// ya que watchEffect lo hará cuando userId esté disponible.
-// Sin embargo, si tienes otras inicializaciones que deben ocurrir una sola vez
-// al montar el componente, puedes mantener onMounted.
-// onMounted(fetchReservationsAndHotels); // <-- Descomenta si necesitas más cosas aquí
-
 </script>
 
 <style scoped>
