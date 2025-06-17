@@ -26,32 +26,38 @@
           lg="3"
           v-for="reserva in reservasDetalladas"
           :key="reserva.id"
-          class="mb-6"
+          class="d-flex"
         >
-          <v-card class="rounded-lg shadow-lg overflow-hidden h-full d-flex flex-column">
-            <v-img
-              :src="reserva.hotelDetails.imageUrl || 'https://placehold.co/600x400/CCCCCC/000000?text=Imagen+No+Disponible'"
-              :alt="reserva.hotelDetails.nombreHotel"
-              height="200px"
-              cover
-              @error="onImageError"
-            />
+          <v-card class="hotel-card d-flex flex-column" elevation="5">
+            <v-img :src="getHotelImage(reserva.hotelDetails.hotelID)" class="white--text align-end" height="200px" cover>
+              <v-card-title class="hotel-card-title">{{ reserva.hotelDetails.nombreHotel }}</v-card-title>
+            </v-img>
 
-            <v-card-title class="text-xl font-semibold text-gray-900 mb-2">
-              {{ reserva.hotelDetails.nombreHotel }}
-            </v-card-title>
-            <v-card-subtitle class="text-gray-600 text-sm mb-2">
-              {{ reserva.hotelDetails.ciudad }}
-            </v-card-subtitle>
-            <v-card-text class="text-gray-700 text-base flex-grow">
-              {{ reserva.hotelDetails.descripcion }}
+            <v-card-text class="flex-grow-1">
+              <div class="text-subtitle-1 mb-2">
+                <v-icon small left>mdi-map-marker</v-icon>
+                {{ reserva.hotelDetails.ciudad }}
+              </div>
+              <v-rating
+                :value="reserva.hotelDetails.calificacionEstrellas"
+                color="amber"
+                dense
+                half-increments
+                readonly
+                size="20"
+              ></v-rating>
+              <p class="description mt-3">{{ reserva.hotelDetails.descripcion }}</p>
+              <div class="mt-3">
+                <p class="font-weight-medium">Precio por Noche: ${{ reserva.hotelDetails.precioPorNoche ? reserva.hotelDetails.precioPorNoche.toFixed(2) : '0.00' }}</p>
+                <p class="font-weight-medium">Servicios Exclusivos: {{ reserva.hotelDetails.serviciosExclusivos }}</p>
+                <p class="font-weight-medium">Capacidad Máxima: {{ reserva.hotelDetails.capacidadMaxima }} personas</p>
+              </div>
             </v-card-text>
 
-            <v-spacer></v-spacer>
-            <v-card-actions class="d-flex flex-column align-start pt-0">
+            <v-card-actions class="pt-0 d-flex flex-column align-start">
               <p class="text-lg font-bold text-blue-600 mb-4 ml-4">
-                ${{ reserva.precioTotal ? reserva.precioTotal.toFixed(2) : '0.00' }} / Total
-                </p>
+                ${{ reserva.precioTotal ? reserva.precioTotal.toFixed(2) : '0.00' }} / Total Reserva
+              </p>
               <v-btn
                 color="red"
                 dark
@@ -94,20 +100,26 @@ import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import axios from 'axios';
 
-// --- Constantes de API ---
-const API_BASE_RESERVATIONS_URL = 'http://localhost:8081/api/reservations'; // Puerto de tu API de reservas
-const API_BASE_HOTELES_URL = 'http://localhost:8081/api/hoteles';       // Puerto de tu API de hoteles
+// --- Importa tus imágenes locales explícitamente aquí ---
+// (Estas rutas deben ser relativas a la ubicación de este archivo CarritoView.vue)
+// Ejemplo: si tus imágenes están en 'src/assets/images/', y CarritoView.vue está en 'src/views/',
+// entonces la ruta sería '../../assets/images/hotel1.jpg'
+import hotel1Img from '../assets/hotel1.jpg';
+import hotel2Img from '../assets/hotel2.jpg';
+// Agrega más imports para cada imagen local que tengas, si aplica.
+// Si no tienes imágenes locales y solo quieres usar URLs, puedes eliminar estos imports.
+
 
 // --- Inicialización ---
 const router = useRouter();
-const store = useStore(); // Para acceder al userId del store
+const store = useStore();
 
 // --- Variables Reactivas (Estado del componente) ---
-const reservas = ref([]); // Almacenará las reservas crudas obtenidas del backend (Reserva objects)
-const reservasDetalladas = ref([]); // Almacenará las reservas con los detalles del hotel "anidados"
-const loadingReservas = ref(true); // Estado de carga de las reservas
-const errorCargandoReservas = ref(false); // Estado de error al cargar reservas
-const isDeleting = ref({}); // Objeto para controlar el estado de eliminación de cada reserva por su ID (ej. { 123: true, 456: false })
+const reservas = ref([]);
+const reservasDetalladas = ref([]);
+const loadingReservas = ref(true);
+const errorCargandoReservas = ref(false);
+const isDeleting = ref({});
 
 const snackbar = ref({
   show: false,
@@ -116,22 +128,33 @@ const snackbar = ref({
   timeout: 3000,
 });
 
-// --- Mapeo de Imágenes Locales (si las usas para los hoteles) ---
-// Si tienes un mapeo de hotelID a imágenes locales, inclúyelo aquí.
-// Por ejemplo:
-// import hotel1Img from '../assets/hotel1.jpg';
-// import hotel2Img from '../assets/hotel2.jpg';
-// const localHotelImages = {
-//   1: hotel1Img,
-//   2: hotel2Img,
-//   // ... otros mapeos si los tienes
-// };
-
-// Función para obtener la imagen del hotel (si usas mapeo local)
-// const getHotelImage = (id) => localHotelImages[id] || 'https://placehold.co/600x400/CCCCCC/000000?text=Imagen+No+Disponible';
+// --- Mapeo de Imágenes Locales (debe coincidir con HotelesView) ---
+// Si tus IDs de hotel en el backend son dinámicos, esto es menos práctico.
+// En un entorno de producción, las URLs de imágenes deberían venir de tu backend.
+const localHotelImages = {
+  1: hotel1Img,
+  2: hotel2Img,
+  // Asegúrate de mapear los IDs de hotel a las imágenes correctas si las tienes.
+  // Ejemplo:
+  // 3: hotel3Img, // Si tienes hotel3.jpg y su ID es 3
+};
 
 
 // --- Funciones ---
+
+/**
+ * Obtiene la ruta de imagen para un hotel dado su ID.
+ * Si no hay una imagen local mapeada, devuelve un placeholder genérico.
+ * @param {number} id - El ID del hotel.
+ * @returns {string} La ruta de la imagen o URL del placeholder.
+ */
+const getHotelImage = (id) => {
+  // Aquí puedes decidir si prefieres usar una URL directa de hotelDetails
+  // si tu backend ya la envía (como 'hotel.imageUrl' o 'hotel.image_url')
+  // o si prefieres seguir usando el mapeo local.
+  // Por ahora, usamos el mapeo local como en HotelesView.
+  return localHotelImages[id] || 'https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-800x450.webp';
+};
 
 /**
  * Redirige al usuario a la página principal de hoteles.
@@ -142,21 +165,19 @@ function volverHome() {
 
 /**
  * Obtiene los detalles de un hotel dado su ID desde la API de hoteles.
- * Esta es la implementación de la Opción B.
  * @param {number} hotelId - El ID del hotel.
  * @returns {Promise<object|null>} Los detalles del hotel o null si hay un error.
  */
 async function fetchHotelDetails(hotelId) {
   try {
-    const response = await axios.get(`${API_BASE_HOTELES_URL}/${hotelId}`);
-    // console.log(`Detalles del hotel ${hotelId}:`, response.data); // Para depuración
-    // Aquí puedes añadir la propiedad imageUrl si la necesitas y no viene de tu API de hoteles
-    // Por ejemplo, si tienes un mapeo local de imágenes:
-    // response.data.imageUrl = getHotelImage(hotelId);
+    const response = await axios.get(`/api/hoteles/${hotelId}`);
+    console.log(`Detalles del hotel ${hotelId} obtenidos:`, response.data); // Log para verificar la respuesta del backend
+    // Si tu backend envía 'imageUrl' aquí, podrías usarlo directamente
+    // response.data.imageUrl = response.data.imageUrl || getHotelImage(hotelId);
     return response.data;
   } catch (err) {
     console.error(`Error al obtener detalles del hotel ${hotelId}:`, err.response ? err.response.data : err.message);
-    return null; // Retorna null si no se pueden obtener los detalles
+    return null;
   }
 }
 
@@ -167,7 +188,7 @@ async function fetchHotelDetails(hotelId) {
 async function cargarReservaciones() {
   loadingReservas.value = true;
   errorCargandoReservas.value = false;
-  reservasDetalladas.value = []; // Limpiar antes de cargar nuevas reservas
+  reservasDetalladas.value = [];
 
   const userId = store.getters.getUserId;
 
@@ -184,25 +205,31 @@ async function cargarReservaciones() {
   }
 
   try {
-    // Paso 1: Obtener las reservas del usuario
-    const responseReservas = await axios.get(`${API_BASE_RESERVATIONS_URL}/user/${userId}`);
-    reservas.value = responseReservas.data; // Almacena las reservas crudas (ej. { id: 1, userId: 1, hotelId: 2, precioTotal: 110.50 })
+    const responseReservas = await axios.get(`/api/reservations/user/${userId}`);
+    reservas.value = responseReservas.data;
 
-    // Paso 2: Para cada reserva, obtener los detalles completos del hotel
-    // Usamos Promise.all para hacer todas las llamadas de hotel en paralelo
     const promises = reservas.value.map(async (reserva) => {
+      console.log(`Procesando reserva con hotelId: ${reserva.hotelId}`);
       const hotelDetails = await fetchHotelDetails(reserva.hotelId);
-      // Combinamos la reserva con los detalles del hotel.
-      // Si hotelDetails es null (por error en fetchHotelDetails), usamos un objeto placeholder.
+
+      console.log(`>>>> hotelDetails recibido para ${reserva.hotelId}:`, hotelDetails);
+      console.log(`>>>> Tipo de hotelDetails:`, typeof hotelDetails);
+      if (hotelDetails && typeof hotelDetails === 'object') {
+          console.log(`>>>> Propiedades de hotelDetails:`, Object.keys(hotelDetails));
+      }
+
       return {
-        ...reserva, // Propiedades de la reserva (id, userId, hotelId, precioTotal)
-        hotelDetails: hotelDetails || { // Propiedades del hotel (nombreHotel, ciudad, descripcion, etc.)
-          hotelID: reserva.hotelId, // Mantén el ID del hotel, útil para depuración
+        ...reserva,
+        hotelDetails: hotelDetails || {
+          hotelID: reserva.hotelId,
           nombreHotel: 'Hotel Desconocido',
           ciudad: 'Ubicación No Disponible',
           descripcion: 'Detalles del hotel no pudieron ser cargados.',
-          imageUrl: 'https://placehold.co/600x400/CCCCCC/000000?text=Hotel+No+Encontrado', // Placeholder si no se encuentra
-          precioPorNoche: 0, // Valor por defecto
+          // Importante: Si tu backend no proporciona imageUrl,
+          // getHotelImage se encargará del placeholder.
+          // Si lo proporciona, este placeholder aquí es menos crítico,
+          // pero sirve como último recurso si fetchHotelDetails falla completamente.
+          precioPorNoche: 0,
           calificacionEstrellas: 0,
           capacidadMaxima: 0,
           serviciosExclusivos: 'No disponibles'
@@ -210,8 +237,8 @@ async function cargarReservaciones() {
       };
     });
 
-    // Esperar a que todas las promesas de detalles de hotel se resuelvan
     reservasDetalladas.value = await Promise.all(promises);
+    console.log('Final reservasDetalladas (para depuración):', reservasDetalladas.value);
 
   } catch (err) {
     console.error('Error al cargar reservaciones o detalles de hotel:', err.response ? err.response.data : err.message);
@@ -232,21 +259,19 @@ async function cargarReservaciones() {
  * @param {number} reservaId - El ID de la reserva a eliminar.
  */
 async function eliminarReservacion(reservaId) {
-  isDeleting.value = { ...isDeleting.value, [reservaId]: true }; // Activa el estado de carga para ese botón
+  isDeleting.value = { ...isDeleting.value, [reservaId]: true };
 
   try {
-    const response = await axios.delete(`${API_BASE_RESERVATIONS_URL}/${reservaId}`);
+    const response = await axios.delete(`api/reservations/${reservaId}`);
 
-    if (response.status === 204) { // 204 No Content es el status esperado para un DELETE exitoso
+    if (response.status === 204) {
       snackbar.value = {
         show: true,
         message: 'Reservación eliminada con éxito.',
         color: 'success',
       };
-      // Después de eliminar exitosamente, recarga la lista de reservas
-      await cargarReservaciones();
+      await cargarReservaciones(); // Recargar la lista
     } else {
-      // Aunque el status no sea 204, si no lanzó un error, puede ser un caso especial.
       snackbar.value = {
         show: true,
         message: 'Hubo un problema al eliminar la reservación. Inténtalo de nuevo.',
@@ -272,25 +297,53 @@ async function eliminarReservacion(reservaId) {
       timeout: 5000,
     };
   } finally {
-    // Importante: Restablecer el estado de carga para el botón específico
     isDeleting.value = { ...isDeleting.value, [reservaId]: false };
   }
 }
 
-/**
- * Función para manejar errores de carga de imagen.
- * Cuando una imagen no se carga, se reemplaza con un placeholder.
- * @param {Event} event - El evento de error de la imagen.
- */
-function onImageError(event) {
-  event.target.src = 'https://placehold.co/600x400/CCCCCC/000000?text=Imagen+No+Disponible';
-}
+// Ya no necesitamos onImageError si getHotelImage siempre devuelve una URL válida/placeholder
+// function onImageError(event) {
+//   event.target.src = 'https://placehold.co/600x400/CCCCCC/000000?text=Imagen+No+Disponible';
+// }
 
-// --- Hook de Ciclo de Vida ---
-// Se ejecuta cuando el componente se monta en el DOM.
-// Aquí es donde iniciamos la carga de las reservaciones.
 onMounted(cargarReservaciones);
 </script>
+
+<style scoped>
+/* Añade o ajusta estos estilos según sea necesario para que coincidan con HotelesView */
+.carrito-container {
+  min-height: 100vh;
+}
+
+.btn-volver {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out mb-6;
+}
+
+/* Estilos de la tarjeta de hotel (puedes copiarlos directamente de tu archivo CSS o style block de HotelesView) */
+.hotel-card {
+  height: 100%; /* Asegura que las tarjetas tengan la misma altura */
+  border-radius: 8px; /* Ejemplo de borde redondeado */
+  display: flex;
+  flex-direction: column;
+}
+
+.hotel-card-title {
+  background: rgba(0, 0, 0, 0.5); /* Fondo semitransparente para el título en la imagen */
+  color: white;
+  padding: 8px 16px;
+  font-size: 1.25rem; /* Ajusta según tus preferencias */
+  font-weight: bold;
+}
+
+.description {
+  /* Estilos para la descripción, como limitar líneas si es necesario */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limita a 3 líneas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
 
 <style scoped>
 /* Tus estilos existentes aquí. No necesitan cambios. */

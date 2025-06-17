@@ -118,7 +118,7 @@ const fetchHotels = async () => {
   error.value = false;  // Limpia cualquier error anterior
   try {
     // URL de tu API para obtener hoteles. Asegúrate de que el puerto sea correcto.
-    const response = await axios.get('http://localhost:8081/api/hoteles');
+    const response = await axios.get('/api/hoteles');
     hotels.value = response.data; // Asigna los hoteles obtenidos a la variable reactiva
   } catch (err) {
     console.error('Error al obtener hoteles:', err);
@@ -178,7 +178,7 @@ const reserveHotel = async (hotel) => {
 
     // 4. Realizar la solicitud POST al endpoint de reservas
     // URL de tu API para crear reservas. Asegúrate de que el puerto sea correcto (diferente al de hoteles).
-    const response = await axios.post('http://localhost:8081/api/reservations', reservaData);
+    const response = await axios.post('/api/reservations', reservaData);
 
     // 5. Manejo de la respuesta
     if (response.status === 201) { // HttpStatus.CREATED en Spring Boot

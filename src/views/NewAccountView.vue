@@ -88,13 +88,13 @@ const visible = ref(false);
 
 // Asegúrate de que esta URL base apunte a donde se está ejecutando tu aplicación Spring Boot.
 // Por ejemplo, si tu Spring Boot está en localhost:8080, sería 'http://localhost:8080'.
-const API_BASE_URL = 'http://localhost:8080';
+
 
 const createAccount = async () => {
   try {
     // El endpoint completo para prueba http://localhost:8081/api/usuarios
     //const response = await axios.post(`${API_BASE_URL}/api/usuarios`, {
-    const response = await axios.post(`http://localhost:8081/api/usuarios`, {
+    const response = await axios.post(`/api/usuarios`, {
       username: username.value,
       email: email.value,
       password: password.value,

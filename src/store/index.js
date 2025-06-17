@@ -27,7 +27,7 @@ const store = createStore({
     // Esta acción manejará la lógica de login real con tu backend
     async login({ commit }, credentials) { // 'credentials' contendrá { email, password }
       try {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
+        const response = await axios.post(`/api/auth/login`, credentials);
 
         // ASUMIENDO que tu API de login devuelve un objeto de usuario
         // con el userId tras un login exitoso.
